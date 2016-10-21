@@ -5,6 +5,11 @@
  */
 package bio.computation.ga;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Random;
 
 /**
@@ -19,10 +24,12 @@ public class Popultation
     public final double CROSSOVER_NUM = 0.9;
     public final double MUTATION_NUM = 0.01;
     
+    public final String OUTPUT_FILE = "graph_data.csv";
+    
     private Individual [] population;
     private Individual [] offspring;
     
-    private Random random;
+    private final Random random;
     
     private double meanFitness;
     private int fittest;
@@ -32,6 +39,11 @@ public class Popultation
         this.population = new Individual[POPULATION_NUM];
         this.offspring = new Individual[POPULATION_NUM];
         this.random = new Random();
+        
+        File file = new File(this.OUTPUT_FILE);
+        if (file.exists()){
+            file.delete();
+        } 
         
         for (int i = 0; i < POPULATION_NUM; i++)
         {
@@ -85,7 +97,7 @@ public class Popultation
                 for (int j = crossOverPoint; j < GENE_NUM; j++)
                 {
                     temp = population[i*2].getGene()[j];
-                    population[i*2].setGene(j, population[i*2].getGene()[j]);
+                    population[i*2].setGene(j, population[i*2 + 1].getGene()[j]);
                     population[i*2 + 1].setGene(j, temp);
                 }
                 
@@ -121,6 +133,7 @@ public class Popultation
     void print()
     {
         System.out.println("Mean Fitness: " + this.meanFitness + " Fittest: " + this.fittest);
+        this.outputFitnessToFile();
     }
     
     public void printPopulation()
@@ -129,5 +142,18 @@ public class Popultation
         {
             this.population[i].print();
         }
+    }
+    
+    public void outputFitnessToFile()
+    {
+        try(FileWriter fw = new FileWriter(this.OUTPUT_FILE, true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            PrintWriter out = new PrintWriter(bw);)
+        {
+            out.println(this.meanFitness + "," + this.fittest);
+        } catch (IOException e) 
+        {
+        }
+        
     }
 }
