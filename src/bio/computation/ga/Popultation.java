@@ -7,10 +7,14 @@ package bio.computation.ga;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Random;
+import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -20,11 +24,12 @@ public class Popultation
 {
     public final int POPULATION_NUM = 50;
     public final int GENE_NUM = 50;
-    public final int GENERATIONS = 100;
+    public final int GENERATIONS = 0;
     public final double CROSSOVER_NUM = 0.9;
     public final double MUTATION_NUM = 0.01;
     
     public final String OUTPUT_FILE = "graph_data.csv";
+    public final String INPUT_FILE = "input_data.dsv";
     
     private Individual [] population;
     private Individual [] offspring;
@@ -49,6 +54,8 @@ public class Popultation
         {
             this.population[i] = new Individual(GENE_NUM, i);
         }
+        
+        this.readInFile();
     }
 
     void run()
@@ -155,5 +162,20 @@ public class Popultation
         {
         }
         
+    }
+    
+    public void readInFile()
+    {
+        try
+        {
+            Scanner in = new Scanner(new File(INPUT_FILE));
+            while(in.hasNext())
+            {
+                System.out.println(in.next());
+            }
+        } catch (FileNotFoundException ex)
+        {
+            Logger.getLogger(Popultation.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
