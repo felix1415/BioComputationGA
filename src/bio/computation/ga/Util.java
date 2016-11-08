@@ -5,6 +5,8 @@
  */
 package bio.computation.ga;
 
+import java.util.Arrays;
+
 /**
  *
  * @author alexgray
@@ -25,8 +27,18 @@ public class Util
         System.out.println();
     }
 
-    static void printArray(int[] gene)
+    public static String printArray(int[] gene)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        System.out.println("bio.computation.ga.Util.printArray()" + Arrays.toString(gene));
+        String s = "";
+        for (int i = 0; i < gene.length; i++)
+        {
+            System.out.print(gene[i]);
+            s += gene[i];
+            
+        }
+        System.out.print("|");
+        s += "|";
+        return s;
     }
 }

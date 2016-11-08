@@ -25,7 +25,7 @@ public class Popultation
     public final int POPULATION_NUM = 50;
     public final int GENE_NUM;
     public int RULE_LENGTH;
-    public final int NUMBER_OF_RULES = 10;
+    public final int NUMBER_OF_RULES = 5;
     public final int GENERATIONS = 100;
     public final double CROSSOVER_NUM = 0.9;
     public final double MUTATION_NUM = 0.01;
@@ -42,12 +42,14 @@ public class Popultation
     
     private double meanFitness;
     private int fittest;
+    private CandidateRuleSet fittestSolution;
 
     public Popultation()
     {
         this.population = new CandidateRuleSet[POPULATION_NUM];
         this.offspring = new CandidateRuleSet[POPULATION_NUM];
         this.random = new Random();
+        this.fittestSolution = null;
         
         File file = new File(this.OUTPUT_FILE);
         if (file.exists()){
@@ -76,6 +78,7 @@ public class Popultation
             this.mutation();
             this.crossover();
             this.calculateFitness();
+//            this.addBestSolutionBack();
             this.printPopulation();
             this.print();
         }
@@ -144,6 +147,7 @@ public class Popultation
             if(fitness > this.fittest)
             {
                 this.fittest = fitness;
+                this.fittestSolution = this.population[i];
             }
             this.meanFitness += fitness;
         }
@@ -212,5 +216,11 @@ public class Popultation
     private void printFitnessRules()
     {
         Util.printArray(fitnessRules, this.RULE_LENGTH);
+    }
+
+    private void addBestSolutionBack()
+    {
+        int target = random.nextInt(POPULATION_NUM);
+        this.population[target] = this.fittestSolution;
     }
 }

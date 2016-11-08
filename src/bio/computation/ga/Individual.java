@@ -26,10 +26,6 @@ public class Individual
         this.geneLength = gene;
         this.fitness = 0;
         this.r = new Random();
-        for (int i = 0; i < this.gene.length; i++)
-        {
-            this.gene[i] = this.r.nextInt(2);
-        }
     }
 
     public Individual(Individual in)
