@@ -18,12 +18,12 @@ public class Individual
     private int[] gene;
     private int fitness;
     private Random r;
-    private final int index;
+    private final int geneLength;
 
-    public Individual(int gene, int index)
+    public Individual(int gene)
     {
-        this.index = index;
         this.gene = new int[gene];
+        this.geneLength = gene;
         this.fitness = 0;
         this.r = new Random();
         for (int i = 0; i < this.gene.length; i++)
@@ -34,37 +34,58 @@ public class Individual
 
     public Individual(Individual in)
     {
-        this.index = in.getIndex() + 100;
         this.gene = in.getGene().clone();
+        this.geneLength = this.gene.length;
         this.fitness = 0;
         this.r = new Random();
     }
 
-    public int getIndex()
+    public Individual(int[] gene)
     {
-        return index;
+        this.gene = gene;
+        this.geneLength = this.gene.length;
+        this.fitness = 0;
+        this.r = new Random();
+    }
+    
+    public void incFitness()
+    {
+        this.fitness++;
     }
     
     public int getFitness()
     {
-        return fitness;
+        return this.fitness;
     }
 
-    public void calcFitness()
+    public void setFitness(int fitness)
     {
-        this.fitness = 0;
-        for (int i = 0; i < this.gene.length; i++)
-        {
-            if(this.gene[i] == 1)
-            {
-                this.fitness++;
-            }
-        }
+        this.fitness = fitness;
     }
+
+    public int getGeneLength()
+    {
+        return this.geneLength;
+    }    
 
     public int[] getGene()
     {
-        return gene;
+        return this.gene;
+    }
+    
+    public String getGeneAsString()
+    {
+        String geneString = "";
+        for (int i = 0; i < gene.length; i++)
+        {
+            geneString = geneString + Integer.toString(gene[i]);
+        }
+        return geneString;
+    }
+    
+    public void setGene(int[] geneIn)
+    {
+        this.gene = geneIn;
     }
 
     public void setGene(int indexIn, int geneIn)
@@ -78,13 +99,15 @@ public class Individual
         {
             if(mutationVal > r.nextDouble())
             {
-                this.flipGene(i);
+                this.mutateGene(i);
             }
         }
     }
     
-    public void flipGene(int geneIndex)
+    public void mutateGene(int geneIndex)
     {
+        //if gene is 1, gene can flip to be 0 or #
+//        boolean splitter = this.r.nextBoolean();
         if(this.gene[geneIndex] == 1)
         {
             this.gene[geneIndex] = 0;
@@ -95,9 +118,13 @@ public class Individual
         }
     }
 
+    public Random getRandom()
+    {
+        return r;
+    }
+
     public void print()
     {
-        System.out.print(this.index + "*");
         System.out.print(Arrays.toString(this.gene));
         System.out.println("-" + this.fitness);
     }

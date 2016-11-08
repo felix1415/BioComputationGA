@@ -22,17 +22,21 @@ import java.util.logging.Logger;
  */
 public class Popultation
 {
-    public final int POPULATION_NUM = 50;
-    public final int GENE_NUM = 50;
-    public final int GENERATIONS = 0;
+    public final int POPULATION_NUM = 5;
+    public final int GENE_NUM;
+    public int RULE_LENGTH;
+    public final int NUMBER_OF_RULES = 10;
+    public final int GENERATIONS = 10;
     public final double CROSSOVER_NUM = 0.9;
     public final double MUTATION_NUM = 0.01;
     
     public final String OUTPUT_FILE = "graph_data.csv";
     public final String INPUT_FILE = "input_data.dsv";
     
-    private Individual [] population;
-    private Individual [] offspring;
+    private int [] fitnessRules;
+    
+    private CandidateRuleSet [] population;
+    private CandidateRuleSet [] offspring;
     
     private final Random random;
     
@@ -41,8 +45,8 @@ public class Popultation
 
     public Popultation()
     {
-        this.population = new Individual[POPULATION_NUM];
-        this.offspring = new Individual[POPULATION_NUM];
+        this.population = new CandidateRuleSet[POPULATION_NUM];
+        this.offspring = new CandidateRuleSet[POPULATION_NUM];
         this.random = new Random();
         
         File file = new File(this.OUTPUT_FILE);
@@ -50,12 +54,14 @@ public class Popultation
             file.delete();
         } 
         
+        this.RULE_LENGTH = 0;
+        this.readInFile();
+        this.GENE_NUM = RULE_LENGTH * NUMBER_OF_RULES;
         for (int i = 0; i < POPULATION_NUM; i++)
         {
-            this.population[i] = new Individual(GENE_NUM, i);
+            this.population[i] = new CandidateRuleSet(GENE_NUM, fitnessRules, RULE_LENGTH, i);
         }
-        
-        this.readInFile();
+
     }
 
     void run()
@@ -63,11 +69,12 @@ public class Popultation
         this.calculateFitness();
         this.printPopulation();
         this.print();
+        this.printFitnessRules();
         for (int i = 0; i < GENERATIONS; i++)
         {
             this.selection();
-            this.mutation();
-            this.crossover();
+//            this.mutation();
+//            this.crossover();
             this.calculateFitness();
             this.printPopulation();
             this.print();
@@ -83,11 +90,11 @@ public class Popultation
             
             if(population[parent1].getFitness() >= population[parent2].getFitness())
             {
-                offspring[i] = new Individual(population[parent1]);
+                offspring[i] = new CandidateRuleSet(population[parent1]);
             }
             else
             {
-                offspring[i] = new Individual(population[parent2]);
+                offspring[i] = new CandidateRuleSet(population[parent2]);
             }
         }
         population = offspring.clone();
@@ -95,14 +102,19 @@ public class Popultation
     
     void crossover()
     {
+        //for half the population
         for (int i = 0; i < (POPULATION_NUM/2); i++)
         {
+            //if crossover is triggered
             if(random.nextDouble() > CROSSOVER_NUM)
             {
+                //get crossover point
                 int crossOverPoint = random.nextInt(GENE_NUM);
                 int temp;
+                //for each element after the crossover point
                 for (int j = crossOverPoint; j < GENE_NUM; j++)
                 {
+                    //swap (i*2 element) and the (i*2 + 1)
                     temp = population[i*2].getGene()[j];
                     population[i*2].setGene(j, population[i*2 + 1].getGene()[j]);
                     population[i*2 + 1].setGene(j, temp);
@@ -114,6 +126,7 @@ public class Popultation
     
     void mutation()
     {
+        //for each member of the population, process mutation
         for (int i = 0; i < POPULATION_NUM; i++)
         {
             this.population[i].mutation(MUTATION_NUM);
@@ -164,18 +177,41 @@ public class Popultation
         
     }
     
-    public void readInFile()
+    private void readInFile()
     {
+        int geneNumber = 0;
         try
         {
+            int numOfLines = 0;
             Scanner in = new Scanner(new File(INPUT_FILE));
             while(in.hasNext())
             {
-                System.out.println(in.next());
+                numOfLines++;
+                this.RULE_LENGTH = in.nextLine().replaceAll("\\s+","").length();
+            }
+            this.fitnessRules = new int [numOfLines * this.RULE_LENGTH];
+            in = new Scanner(new File(INPUT_FILE));
+            int ruleNumber = 0;
+            while(in.hasNext())
+            {
+                String ruleIn = in.nextLine().replaceAll("\\s+","");
+                for (int i = 0; i < this.RULE_LENGTH; i++)
+                {
+                    this.fitnessRules[ruleNumber + i] = Integer.parseInt(String.valueOf(ruleIn.charAt(i)));
+                }
+                ruleNumber += this.RULE_LENGTH;
+                geneNumber++;
             }
         } catch (FileNotFoundException ex)
         {
             Logger.getLogger(Popultation.class.getName()).log(Level.SEVERE, null, ex);
         }
+        System.out.println(geneNumber);
+        System.out.println(RULE_LENGTH);
+    }
+
+    private void printFitnessRules()
+    {
+        Util.printArray(fitnessRules, this.RULE_LENGTH);
     }
 }
