@@ -31,7 +31,7 @@ public class CandidateRuleSet extends Individual
 
     public CandidateRuleSet(CandidateRuleSet crsIn)
     {
-        super(crsIn.getGene());
+        super(crsIn.getGene().clone());
         this.fitnessRules = crsIn.getFitnessRules().clone();
         this.RULE_LENGTH = crsIn.getRuleLength();
         this.NUMBER_OF_RULES = crsIn.getGene().length / crsIn.getRuleLength();
@@ -51,10 +51,6 @@ public class CandidateRuleSet extends Individual
     
     public void calcFitness()
     {
-//        printArray(super.getGene());
-//        printArray(this.fitnessRules);
-//        System.out.println("::" + Arrays.toString(super.getGene()));
-//        System.out.println(Arrays.toString(this.fitnessRules));
         this.setFitness(0);
         for (int i = 0; i < this.NUMBER_OF_FITNESS_RULES; i++)
         {
@@ -128,7 +124,12 @@ public class CandidateRuleSet extends Individual
     public void mutateGene(int geneIndex)
     {
         //if gene is 1, gene can flip to be 0 or #
-//        boolean splitter = super.r.nextBoolean();
+        boolean wildcard = super.getRandom().nextBoolean();
+        if ( (wildcard == true) && ((geneIndex + 1) % this.RULE_LENGTH) != 0)
+        {
+            super.setGene(geneIndex, 2);
+            return;
+        }
         if(super.getGene()[geneIndex] == 1)
         {
             super.setGene(geneIndex, 0);

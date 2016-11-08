@@ -22,11 +22,11 @@ import java.util.logging.Logger;
  */
 public class Popultation
 {
-    public final int POPULATION_NUM = 5;
+    public final int POPULATION_NUM = 50;
     public final int GENE_NUM;
     public int RULE_LENGTH;
     public final int NUMBER_OF_RULES = 10;
-    public final int GENERATIONS = 10;
+    public final int GENERATIONS = 100;
     public final double CROSSOVER_NUM = 0.9;
     public final double MUTATION_NUM = 0.01;
     
@@ -73,8 +73,8 @@ public class Popultation
         for (int i = 0; i < GENERATIONS; i++)
         {
             this.selection();
-//            this.mutation();
-//            this.crossover();
+            this.mutation();
+            this.crossover();
             this.calculateFitness();
             this.printPopulation();
             this.print();
@@ -173,8 +173,7 @@ public class Popultation
             out.println(this.meanFitness + "," + this.fittest);
         } catch (IOException e) 
         {
-        }
-        
+        }        
     }
     
     private void readInFile()
