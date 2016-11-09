@@ -36,7 +36,7 @@ public class Popultation
     private int [] fitnessRules;
     
     private CandidateRuleSet [] population;
-    private CandidateRuleSet [] offspring;
+    private final CandidateRuleSet [] offspring;
     
     private final Random random;
     
