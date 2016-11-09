@@ -28,7 +28,7 @@ public class Popultation
     public final int NUMBER_OF_RULES = 5;
     public final int GENERATIONS = 100;
     public final double CROSSOVER_NUM = 0.9;
-    public final double MUTATION_NUM = 0.01;
+    public final double MUTATION_NUM = 0.02;
     
     public final String OUTPUT_FILE = "graph_data.csv";
     public final String INPUT_FILE = "input_data.dsv";
@@ -36,7 +36,7 @@ public class Popultation
     private int [] fitnessRules;
     
     private CandidateRuleSet [] population;
-    private CandidateRuleSet [] offspring;
+    private final CandidateRuleSet [] offspring;
     
     private final Random random;
     
@@ -78,7 +78,7 @@ public class Popultation
             this.mutation();
             this.crossover();
             this.calculateFitness();
-//            this.addBestSolutionBack();
+            this.addBestSolutionBack();
             this.printPopulation();
             this.print();
         }
