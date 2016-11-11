@@ -15,14 +15,14 @@ import java.util.Random;
 public class Individual
 {
     
-    private int[] gene;
+    private float[] gene;
     private int fitness;
     private Random r;
     private final int geneLength;
 
     public Individual(int gene)
     {
-        this.gene = new int[gene];
+        this.gene = new float[gene];
         this.geneLength = gene;
         this.fitness = 0;
         this.r = new Random();
@@ -36,7 +36,7 @@ public class Individual
         this.r = new Random();
     }
 
-    public Individual(int[] gene)
+    public Individual(float[] gene)
     {
         this.gene = gene;
         this.geneLength = this.gene.length;
@@ -64,7 +64,7 @@ public class Individual
         return this.geneLength;
     }    
 
-    public int[] getGene()
+    public float[] getGene()
     {
         return this.gene;
     }
@@ -74,17 +74,17 @@ public class Individual
         String geneString = "";
         for (int i = 0; i < gene.length; i++)
         {
-            geneString = geneString + Integer.toString(gene[i]);
+            geneString = geneString + Float.toString(gene[i]);
         }
         return geneString;
     }
     
-    public void setGene(int[] geneIn)
+    public void setGene(float[] geneIn)
     {
         this.gene = geneIn;
     }
 
-    public void setGene(int indexIn, int geneIn)
+    public void setGene(int indexIn, float geneIn)
     {
         this.gene[indexIn] = geneIn;
     }

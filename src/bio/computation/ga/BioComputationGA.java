@@ -18,7 +18,7 @@ public class BioComputationGA
     public static void main(String[] args)
     {
         Popultation p = new Popultation();
-        p.run();
+//        p.run();
     }
     
 }

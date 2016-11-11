@@ -29,39 +29,41 @@ public class Popultation
     public final int GENERATIONS = 100;
     public final double CROSSOVER_NUM = 0.9;
     public final double MUTATION_NUM = 0.01;
+    public final double MUTATION_RANGE= 0.1;
     
     public final String OUTPUT_FILE = "graph_data.csv";
     public final String INPUT_FILE = "input_data.dsv";
     
-    private int [] fitnessRules;
+    private float [] fitnessRules;
     
-    private CandidateRuleSet [] population;
-    private final CandidateRuleSet [] offspring;
+    private RuleSet [] population;
+    private final RuleSet [] offspring;
     
     private final Random random;
     
     private double meanFitness;
     private int fittest;
-    private CandidateRuleSet fittestSolution;
+    private RuleSet fittestSolution;
 
     public Popultation()
     {
-        this.population = new CandidateRuleSet[POPULATION_NUM];
-        this.offspring = new CandidateRuleSet[POPULATION_NUM];
+        this.population = new RuleSet[POPULATION_NUM];
+        this.offspring = new RuleSet[POPULATION_NUM];
         this.random = new Random();
         this.fittestSolution = null;
         
+        //delete exsisting output file
         File file = new File(this.OUTPUT_FILE);
         if (file.exists()){
             file.delete();
-        } 
+        }
         
         this.RULE_LENGTH = 0;
         this.readInFile();
         this.GENE_NUM = RULE_LENGTH * NUMBER_OF_RULES;
         for (int i = 0; i < POPULATION_NUM; i++)
         {
-            this.population[i] = new CandidateRuleSet(GENE_NUM, fitnessRules, RULE_LENGTH, i);
+            this.population[i] = new RuleSet(GENE_NUM, fitnessRules, RULE_LENGTH, i);
         }
 
     }
@@ -93,11 +95,11 @@ public class Popultation
             
             if(population[parent1].getFitness() >= population[parent2].getFitness())
             {
-                offspring[i] = new CandidateRuleSet(population[parent1]);
+                offspring[i] = new RuleSet(population[parent1]);
             }
             else
             {
-                offspring[i] = new CandidateRuleSet(population[parent2]);
+                offspring[i] = new RuleSet(population[parent2]);
             }
         }
         population = offspring.clone();
@@ -113,7 +115,7 @@ public class Popultation
             {
                 //get crossover point
                 int crossOverPoint = random.nextInt(GENE_NUM);
-                int temp;
+                float temp;
                 //for each element after the crossover point
                 for (int j = crossOverPoint; j < GENE_NUM; j++)
                 {
@@ -186,21 +188,36 @@ public class Popultation
         try
         {
             int numOfLines = 0;
-            Scanner in = new Scanner(new File(INPUT_FILE));
-            while(in.hasNext())
+            Scanner fileIn = new Scanner(new File(INPUT_FILE));
+            while(fileIn.hasNext())
             {
+                if(numOfLines == 0)
+                {
+                    Scanner line = new Scanner(fileIn.nextLine());
+                    numOfLines++; // increment for taking one off the fileIn
+                    while(line.hasNext())
+                    {
+                        line.next();
+                        this.RULE_LENGTH++;
+                    }
+                }
                 numOfLines++;
-                this.RULE_LENGTH = in.nextLine().replaceAll("\\s+","").length();
+                fileIn.nextLine();
             }
-            this.fitnessRules = new int [numOfLines * this.RULE_LENGTH];
-            in = new Scanner(new File(INPUT_FILE));
+            this.fitnessRules = new float [numOfLines * this.RULE_LENGTH];
+            fileIn = new Scanner(new File(INPUT_FILE));
             int ruleNumber = 0;
-            while(in.hasNext())
+            //while there is a next line
+            while(fileIn.hasNextLine())
             {
-                String ruleIn = in.nextLine().replaceAll("\\s+","");
+                Scanner line = new Scanner(fileIn.nextLine());
+                //for each gene in the line
                 for (int i = 0; i < this.RULE_LENGTH; i++)
                 {
-                    this.fitnessRules[ruleNumber + i] = Integer.parseInt(String.valueOf(ruleIn.charAt(i)));
+//                    System.out.println(line.next());
+                    //add gene to position in rule and rule position in array
+                    this.fitnessRules[ruleNumber + i] = Float.parseFloat(String.valueOf(line.next()));
+                    
                 }
                 ruleNumber += this.RULE_LENGTH;
                 geneNumber++;

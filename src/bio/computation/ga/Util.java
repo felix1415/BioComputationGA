@@ -13,7 +13,7 @@ import java.util.Arrays;
  */
 public class Util
 {
-    public static void printArray(int [] array, int ruleLength)
+    public static void printArray(float [] array, int ruleLength)
     {
         int numberOfRules = array.length / ruleLength;
         for (int i = 0; i < numberOfRules; i++)

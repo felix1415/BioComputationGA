@@ -11,15 +11,15 @@ import java.util.Arrays;
  *
  * @author alexgray
  */
-public class CandidateRuleSet extends Individual
+public class RuleSet extends Individual
 {
-    private final int [] fitnessRules;
+    private final float [] fitnessRules;
     private final int RULE_LENGTH;
     private final int index;
     private final int NUMBER_OF_RULES;
     private final int NUMBER_OF_FITNESS_RULES;
     
-    public CandidateRuleSet(int numberOfGenes, int [] rulesIn, int ruleLength, int indexIn)
+    public RuleSet(int numberOfGenes, float [] rulesIn, int ruleLength, int indexIn)
     {
         super(numberOfGenes);
         this.fitnessRules = rulesIn;
@@ -28,22 +28,22 @@ public class CandidateRuleSet extends Individual
         this.NUMBER_OF_RULES = super.getGene().length / this.RULE_LENGTH;
         this.NUMBER_OF_FITNESS_RULES = this.fitnessRules.length / this.RULE_LENGTH;
         
-        int [] array = new int[numberOfGenes];
+        float [] array = new float[numberOfGenes];
         for (int i = 0; i < numberOfGenes; i++)
         {
             if (((i + 1) % this.RULE_LENGTH) == 0)
             {
-                array[i] = super.getRandom().nextInt(2);
+                array[i] = super.getRandom().nextFloat();
             }
             else
             {
-                array[i] = super.getRandom().nextInt(3);
+                array[i] = super.getRandom().nextFloat();
             }
         }
         super.setGene(array);
     }
 
-    public CandidateRuleSet(CandidateRuleSet crsIn)
+    public RuleSet(RuleSet crsIn)
     {
         super(crsIn.getGene().clone());
         this.fitnessRules = crsIn.getFitnessRules().clone();
@@ -58,7 +58,7 @@ public class CandidateRuleSet extends Individual
         return RULE_LENGTH;
     }
     
-    public int [] getFitnessRules()
+    public float [] getFitnessRules()
     {
         return this.fitnessRules;
     }
@@ -114,12 +114,12 @@ public class CandidateRuleSet extends Individual
     }
 
     @Override
-    public int[] getGene()
+    public float[] getGene()
     {
         return super.getGene();
     }
     
-    public int [] getRule(int rule)
+    public float [] getRule(int rule)
     {
         int start = rule * this.RULE_LENGTH;
         int end = ((rule + 1) * this.RULE_LENGTH) - 1;
@@ -128,13 +128,13 @@ public class CandidateRuleSet extends Individual
                 end);
     }
     
-    public int  getOutput(int rule)
+    public float  getOutput(int rule)
     {
         int end = ((rule + 1) * this.RULE_LENGTH) - 1;
         return super.getGene()[end];
     }
     
-    public int [] getFitnessRule(int rule)
+    public float [] getFitnessRule(int rule)
     {
         int start = rule * this.RULE_LENGTH;
         int end = ((rule + 1) * this.RULE_LENGTH) - 1;
@@ -143,7 +143,7 @@ public class CandidateRuleSet extends Individual
                 end);
     }
     
-    public int getFitnessOutput(int rule)
+    public float getFitnessOutput(int rule)
     {
         int end = ((rule + 1) * this.RULE_LENGTH) - 1;
         return this.fitnessRules[end];
@@ -152,7 +152,7 @@ public class CandidateRuleSet extends Individual
     @Override
     public void mutateGene(int geneIndex)
     {
-        int number = super.getGene()[geneIndex];
+        float number = super.getGene()[geneIndex];
         while (super.getGene()[geneIndex] == number)
         {
             if (((geneIndex + 1) % this.RULE_LENGTH) == 0)
@@ -169,7 +169,7 @@ public class CandidateRuleSet extends Individual
     @Override
     public void print()
     {
-//        System.out.println("bio.computation.ga.CandidateRuleSet.print()");
+//        System.out.println("bio.computation.ga.RuleSet.print()");
         System.out.print(this.index);   
         System.out.print("*" + super.getFitness() + "-");
         Util.printArray(this.getGene(), this.RULE_LENGTH);
