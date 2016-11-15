@@ -22,18 +22,21 @@ import java.util.logging.Logger;
  */
 public class Popultation
 {
-    public final int POPULATION_NUM = 50;
+    public final int POPULATION_NUM = 100;
     public final int GENE_NUM;
     public int RULE_LENGTH;
-    public final int NUMBER_OF_RULES = 5;
-    public final int GENERATIONS = 100;
+    public final int NUMBER_OF_RULES = 10;
+    public final int GENERATIONS = 150;
     public final double CROSSOVER_NUM = 0.9;
     public final double MUTATION_NUM = 0.01;
     
     public final String OUTPUT_FILE = "graph_data.csv";
     public final String INPUT_FILE = "input_data.dsv";
     
-    private int [] fitnessRules;
+    private int [] trainingRules;
+    private int numberOfTrainingRules;
+    private int [] validationRules;
+    private int numberOfValidationRules;
     
     private CandidateRuleSet [] population;
     private final CandidateRuleSet [] offspring;
@@ -61,7 +64,7 @@ public class Popultation
         this.GENE_NUM = RULE_LENGTH * NUMBER_OF_RULES;
         for (int i = 0; i < POPULATION_NUM; i++)
         {
-            this.population[i] = new CandidateRuleSet(GENE_NUM, fitnessRules, RULE_LENGTH, i);
+            this.population[i] = new CandidateRuleSet(GENE_NUM, trainingRules, RULE_LENGTH, i);
         }
 
     }
@@ -69,18 +72,32 @@ public class Popultation
     void run()
     {
         this.calculateFitness();
-        this.printPopulation();
+//        this.printPopulation();
         this.print();
-        this.printFitnessRules();
+//        this.printFitnessRules();
         for (int i = 0; i < GENERATIONS; i++)
         {
             this.selection();
             this.mutation();
             this.crossover();
             this.calculateFitness();
-//            this.addBestSolutionBack();
-            this.printPopulation();
+            this.addBestSolutionBack();
+//            this.printPopulation();
             this.print();
+        }
+        
+        int numberOfValidatedRules = this.fittestSolution.validateRules(this.validationRules);
+        if(this.numberOfValidationRules == numberOfValidatedRules)
+        {
+            System.out.println("Fitness of fittest soloution: " + this.fittestSolution.getFitness()
+        +                  "/" + this.numberOfTrainingRules + " Validation Rules Success: " +
+        +                  numberOfValidatedRules + "/" + this.numberOfValidationRules);
+        }
+        else
+        {
+            System.err.println("Fitness of fittest soloution: " + this.fittestSolution.getFitness()
+            +                  "/" + this.numberOfTrainingRules + " Validation Rules Success: " +
+            +                  numberOfValidatedRules + "/" + this.numberOfValidationRules);
         }
     }
     
@@ -192,17 +209,37 @@ public class Popultation
                 numOfLines++;
                 this.RULE_LENGTH = in.nextLine().replaceAll("\\s+","").length();
             }
-            this.fitnessRules = new int [numOfLines * this.RULE_LENGTH];
+            this.numberOfValidationRules = (int) (numOfLines * 0.4);
+            this.numberOfTrainingRules = numOfLines - this.numberOfValidationRules;
+            this.trainingRules = new int [this.numberOfTrainingRules * this.RULE_LENGTH];
+            this.validationRules = new int [this.numberOfValidationRules * this.RULE_LENGTH];
+            boolean [] isValidationSet = this.getValidationBooleanArray(numOfLines, this.numberOfValidationRules);
             in = new Scanner(new File(INPUT_FILE));
-            int ruleNumber = 0;
+            int trainingRuleNumber = 0;
+            int validationRuleNumber = 0;
             while(in.hasNext())
             {
                 String ruleIn = in.nextLine().replaceAll("\\s+","");
+                int index = 0;
                 for (int i = 0; i < this.RULE_LENGTH; i++)
                 {
-                    this.fitnessRules[ruleNumber + i] = Integer.parseInt(String.valueOf(ruleIn.charAt(i)));
+                    if(isValidationSet[geneNumber] == true)
+                    {
+                        this.validationRules[validationRuleNumber + i] = Integer.parseInt(String.valueOf(ruleIn.charAt(i)));
+                    }
+                    else
+                    {
+                        this.trainingRules[trainingRuleNumber + i] = Integer.parseInt(String.valueOf(ruleIn.charAt(i)));
+                    }
                 }
-                ruleNumber += this.RULE_LENGTH;
+                if(isValidationSet[geneNumber] == true)
+                {
+                    validationRuleNumber += this.RULE_LENGTH;
+                }
+                else
+                {
+                    trainingRuleNumber += this.RULE_LENGTH;
+                }
                 geneNumber++;
             }
         } catch (FileNotFoundException ex)
@@ -212,10 +249,26 @@ public class Popultation
         System.out.println(geneNumber);
         System.out.println(RULE_LENGTH);
     }
+    
+    private boolean [] getValidationBooleanArray(int sizeOfDataSet, int validationSets)
+    {
+        int currentNumberOfValidationSets = 0;
+        boolean [] isValidationSet = new boolean [sizeOfDataSet];
+        while (currentNumberOfValidationSets < validationSets)
+        {
+            int newIndex = this.random.nextInt(sizeOfDataSet);
+            if(isValidationSet[newIndex] != true)
+            {
+                isValidationSet[newIndex] = true;
+                currentNumberOfValidationSets++;
+            }
+        }
+        return isValidationSet;
+    }
 
     private void printFitnessRules()
     {
-        Util.printArray(fitnessRules, this.RULE_LENGTH);
+        Util.printArray(trainingRules, this.RULE_LENGTH);
     }
 
     private void addBestSolutionBack()
