@@ -100,6 +100,43 @@ public class CandidateRuleSet extends Individual
         }
     }
     
+    public int validateRules(int [] rulesToValidate)
+    {
+        int numberOfValidatedRules = 0;
+        //for every data rule
+        for (int data = 0; data < rulesToValidate.length / this.RULE_LENGTH; data++)
+        {
+            //for every candidate rule
+            for (int candidate = 0; candidate < this.NUMBER_OF_RULES; candidate++)
+            {
+                //if each bit int candidate matches or has a wildcard with a
+                //data bit, matches stays true
+                boolean matches = true;
+                for (int x = 0; x < this.getRule(candidate).length; x++)
+                {
+                    if(this.getRule(candidate)[x] != 2 && this.getRule(candidate)[x] != this.getValidationRule(data, rulesToValidate)[x])
+                    {
+                        matches = false;
+                        break;
+                    }
+                }
+                if(matches)
+                {
+                    if(this.getOutput(candidate) == this.getValidationOutput(data, rulesToValidate))
+                    {
+                        numberOfValidatedRules++;
+                        break;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+        return numberOfValidatedRules;
+    }
+    
     public static boolean matches(int [] one, int [] two)
     {
         boolean matches = true;
@@ -147,6 +184,21 @@ public class CandidateRuleSet extends Individual
     {
         int end = ((rule + 1) * this.RULE_LENGTH) - 1;
         return this.fitnessRules[end];
+    }
+    
+    public int [] getValidationRule(int rule, int [] array)
+    {
+        int start = rule * this.RULE_LENGTH;
+        int end = ((rule + 1) * this.RULE_LENGTH) - 1;
+        return Arrays.copyOfRange(array, 
+                start, 
+                end);
+    }
+    
+    public int getValidationOutput(int rule, int [] array)
+    {
+        int end = ((rule + 1) * this.RULE_LENGTH) - 1;
+        return array[end];
     }
     
     @Override
