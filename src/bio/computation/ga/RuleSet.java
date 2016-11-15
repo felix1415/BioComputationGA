@@ -18,6 +18,8 @@ public class RuleSet extends Individual
     private final int index;
     private final int NUMBER_OF_RULES;
     private final int NUMBER_OF_FITNESS_RULES;
+    public int zero;
+    public int one;
     
     public RuleSet(int numberOfGenes, float [] rulesIn, int ruleLength, int indexIn)
     {
@@ -41,6 +43,8 @@ public class RuleSet extends Individual
             }
         }
         super.setGene(array);
+        this.zero = 0;
+        this.one = 0;
     }
 
     public RuleSet(RuleSet crsIn)
@@ -51,6 +55,8 @@ public class RuleSet extends Individual
         this.NUMBER_OF_RULES = crsIn.getGene().length / crsIn.getRuleLength();
         this.NUMBER_OF_FITNESS_RULES = crsIn.getFitnessRules().length / (crsIn.getRuleLength() / 2);
         this.index = crsIn.getIndex() + 100;
+        this.zero = 0;
+        this.one = 0;
     }
 
     public int getRuleLength()
@@ -89,24 +95,22 @@ public class RuleSet extends Individual
     
     public void calcFitness()
     {
-        this.setFitness(0);
         this.boundsCheckArray();
+        this.setFitness(0);
         //for every data rule
-//        System.out.println("fit: " + this.NUMBER_OF_FITNESS_RULES + " cad: " + this.NUMBER_OF_RULES);
         for (int data = 0; data < this.NUMBER_OF_FITNESS_RULES; data++)
         {
             //for every candidate rule
             for (int candidate = 0; candidate < this.NUMBER_OF_RULES; candidate++)
             {
-                //if each bit int candidate matches or has a wildcard with a
-                //data bit, matches stays true
+                //if the candidate rule and data rule match, make matches true
                 boolean matches = RuleSet.ruleMatches(this.getRule(candidate), this.getFitnessRule(data));
 
                 if(matches)
                 {
-//                    this.incFitness();
-                    if(Math.abs(this.getOutput(candidate)) == Math.abs(this.getFitnessOutput(data)))
+                    if(this.getOutput(candidate) == this.getFitnessOutput(data))
                     {
+                        
                         this.incFitness();
                         break;
                     }
@@ -115,12 +119,40 @@ public class RuleSet extends Individual
                         break;
                     }
                 }
-                else 
+            }
+        }
+    }
+    
+    public int validateRules(float [] rulesToValidate, int numberOfValidationRules)
+    {
+        int numberOfValidatedRules = 0;
+        this.boundsCheckArray();
+        //for every validation rule
+        for (int data = 0; data < numberOfValidationRules; data++)
+        {
+            //for every candidate rule
+            for (int candidate = 0; candidate < this.NUMBER_OF_RULES; candidate++)
+            {
+                //if each bit int candidate matches or has a wildcard with a
+                //data bit, matches stays true
+                boolean matches = RuleSet.ruleMatches(this.getRule(candidate), this.getValidationRule(data, rulesToValidate));
+
+                if(matches)
                 {
-                    break;
+//                    if(this.getOutput(candidate) == this.getValidationOutput(data, rulesToValidate))
+                    if(Float.valueOf(this.getOutput(candidate)).intValue() == Float.valueOf(this.getValidationOutput(data, rulesToValidate)).intValue())
+                    {
+                        numberOfValidatedRules++;
+                        break;
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
             }
         }
+        return numberOfValidatedRules;
     }
     
     public static boolean ruleMatches(float [] candidate, float [] data)
@@ -133,6 +165,14 @@ public class RuleSet extends Individual
             }
         }
         return true;
+    }
+    
+    public static boolean outputMatches(float candidate, float data)
+    {         
+        String obj1 = String.valueOf(candidate);
+        String obj2 = String.valueOf(data);
+//        System.out.println("obj1: " + obj1 + " obj2: " + obj2);
+                return obj1.equals(obj2);
     }
 
     @Override
@@ -170,6 +210,22 @@ public class RuleSet extends Individual
         int end = ((rule + 1) * (this.RULE_LENGTH / 2)) - 1;
         return this.fitnessRules[end];
     }
+    
+        public float [] getValidationRule(int rule, float [] array)
+    {
+        int start = rule * (this.RULE_LENGTH / 2);
+        int end = ((rule + 1) * (this.RULE_LENGTH / 2)) - 1;
+        return Arrays.copyOfRange(array, 
+                start, 
+                end);
+    }
+    
+    public float getValidationOutput(int rule, float [] array)
+    {
+        int end = ((rule + 1) * (this.RULE_LENGTH / 2)) - 1;
+        return array[end];
+    }
+    
     
     @Override
     public void mutateGene(int geneIndex, float mutateRange)
@@ -217,8 +273,7 @@ public class RuleSet extends Individual
         System.out.println("*" + super.getFitness() + "-");
         for (int i = 0; i < this.NUMBER_OF_RULES; i++)
         {
-            Util.printArray(this.getRule(i));
-            System.out.println("@" + this.getOutput(i));
+            Util.printRule(this.getRule(i), this.getOutput(i));
         }
     }
 

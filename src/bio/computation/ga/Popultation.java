@@ -22,19 +22,27 @@ import java.util.logging.Logger;
  */
 public class Popultation
 {
-    public final int POPULATION_NUM = 1000;
+    public final int POPULATION_NUM = 100;
     public final int GENE_NUM;
     public int RULE_LENGTH;
-    public final int NUMBER_OF_RULES = 12;
-    public final int GENERATIONS = 3000;
+    public final int NUMBER_OF_RULES = 20;
+    public final int GENERATIONS = 1500;
     public final double CROSSOVER_NUM = 0.9;
-    public final double MUTATION_NUM = 0.01;
-    public final float MUTATION_RANGE = (float) 0.1;
+    public double MUTATION_NUM = 0.02;
+    public float MUTATION_RANGE = 0.4f;
+    
+    public final float VALIDATION_RULES_PERCENT = 40f;
+    
+    public final float FINE_TUNE_TRIGGER_PERCENT = 80f;
+    public final float FINE_TUNE_PERCENT = 30f;
     
     public final String OUTPUT_FILE = "graph_data.csv";
     public final String INPUT_FILE = "input_data.dsv";
     
-    private float [] fitnessRules;
+    private float [] trainingRules;
+    private int numberOfTrainingRules;
+    private float [] validationRules;
+    private int numberOfValidationRules;
     
     private RuleSet [] population;
     private final RuleSet [] offspring;
@@ -43,6 +51,7 @@ public class Popultation
     
     private double meanFitness;
     private int fittest;
+    private int worst;
     private RuleSet fittestSolution;
 
     public Popultation()
@@ -64,38 +73,57 @@ public class Popultation
         
         for (int i = 0; i < POPULATION_NUM; i++)
         {
-            this.population[i] = new RuleSet(GENE_NUM, fitnessRules, RULE_LENGTH, i);
+            this.population[i] = new RuleSet(GENE_NUM, trainingRules, RULE_LENGTH, i);
         }
 
     }
 
     void run()
     {
-//        System.out.println(this.population[1].getFitnessOutput(32));
-//        System.out.println(this.population[1].getFitnessOutput(643));
-//        System.out.println(this.population[1].getFitnessOutput(343));
-//        System.out.println(this.population[1].getFitnessOutput(312));
-//        System.out.println(this.population[1].getFitnessOutput(37));
-//        System.out.println(this.population[1].getFitnessOutput(764));
-//        System.out.println(this.population[1].getFitnessOutput(1500));
-//        return;
-        
+        boolean fineTuneTriggered = false;
         this.calculateFitness();
-//        this.printPopulation();
-        this.print();
-//        this.printFitnessRules();
+        this.print(0);
         for (int i = 0; i < GENERATIONS; i++)
         {
             this.selection();
             this.crossover();
             this.mutation();
             this.calculateFitness();
-//            this.addBestSolutionBack();
-//            this.printPopulation();
-            this.print();
+            this.addBestSolutionBack();
+            this.print(i+1);
+            if (this.fittest == this.numberOfTrainingRules)
+            {
+                break;
+            } else if (((float)this.fittest / this.numberOfTrainingRules) > (this.FINE_TUNE_TRIGGER_PERCENT / 100))
+            {
+                if(!fineTuneTriggered)
+                {
+                    System.out.println("@@@Fine Tuning Triggered@@@");
+                    fineTuneTriggered = true;
+                    //decrease the range in which a gene can mutate
+                    this.MUTATION_RANGE = this.MUTATION_RANGE * (this.FINE_TUNE_PERCENT / 100);
+                    //decrese the chance of mutatation
+                    this.MUTATION_NUM = this.MUTATION_NUM / 2;
+                }
+            }
+            
         }
-        this.population[0].printFitnessRules();
-        this.fittestSolution.print();
+        
+//        this.fittestSolution.print();
+        
+        int numberOfValidatedRules = this.fittestSolution.validateRules(this.validationRules, this.numberOfValidationRules);
+        if(this.numberOfValidationRules == numberOfValidatedRules)
+        {
+            System.out.println("Fitness of fittest soloution: " + this.fittestSolution.getFitness()
+        +                  "/" + this.numberOfTrainingRules + " Validation Rules Success: " +
+        +                  numberOfValidatedRules + "/" + this.numberOfValidationRules);
+        }
+        else
+        {
+            System.err.println("Fitness of fittest soloution: " + this.fittestSolution.getFitness()
+            +                  "/" + this.numberOfTrainingRules + " Validation Rules Success: " +
+            +                  numberOfValidatedRules + "/" + this.numberOfValidationRules);
+        }
     }
     
     void selection()
@@ -154,6 +182,7 @@ public class Popultation
     {
         this.meanFitness = 0;
         this.fittest = 0;
+        this.worst = 2000;
         for (int i = 0; i < POPULATION_NUM; i++)
         {
             this.population[i].calcFitness();
@@ -163,14 +192,20 @@ public class Popultation
                 this.fittest = fitness;
                 this.fittestSolution = this.population[i];
             }
+            if(fitness < this.worst)
+            {
+                this.worst = i;
+            }
             this.meanFitness += fitness;
         }
         this.meanFitness = this.meanFitness / POPULATION_NUM;
     }
     
-    void print()
+    void print(int generationNum)
     {
-        System.out.println("Mean Fitness: " + this.meanFitness + " Fittest: " + this.fittest);
+        System.out.println("Mean Fitness: " + this.meanFitness +
+                            " Fittest: " + this.fittest +
+                            " Gen:" + generationNum);
         this.outputFitnessToFile();
     }
     
@@ -216,21 +251,38 @@ public class Popultation
                 numOfLines++;
                 fileIn.nextLine();
             }
-            this.fitnessRules = new float [numOfLines * this.RULE_LENGTH];
+            this.numberOfValidationRules = (int) (numOfLines * ((float)VALIDATION_RULES_PERCENT / 100));
+            this.numberOfTrainingRules = numOfLines - this.numberOfValidationRules;
+            this.trainingRules = new float [this.numberOfTrainingRules * this.RULE_LENGTH];
+            this.validationRules = new float [this.numberOfValidationRules * this.RULE_LENGTH];
+            boolean [] isValidationSet = this.getValidationBooleanArray(numOfLines, this.numberOfValidationRules);
             fileIn = new Scanner(new File(INPUT_FILE));
-            int ruleNumber = 0;
-            //while there is a next line
-            while(fileIn.hasNextLine())
+            int trainingRuleNumber = 0;
+            int validationRuleNumber = 0;
+            while(fileIn.hasNext())
             {
                 Scanner line = new Scanner(fileIn.nextLine());
                 //for each gene in the line
                 for (int i = 0; i < this.RULE_LENGTH; i++)
                 {
-                    //add gene to position in rule and rule position in array
-                    this.fitnessRules[ruleNumber + i] = Float.parseFloat(String.valueOf(line.next()));
-                    
+                    //add gene to position in rule and rule position in array and correct array (training or validation)
+                    if(isValidationSet[geneNumber] == true)
+                    {
+                        this.validationRules[validationRuleNumber + i] = Float.parseFloat(String.valueOf(line.next()));
+                    }
+                    else
+                    {
+                        this.trainingRules[trainingRuleNumber + i] = Float.parseFloat(String.valueOf(line.next()));
+                    }
                 }
-                ruleNumber += this.RULE_LENGTH;
+                if(isValidationSet[geneNumber] == true)
+                {
+                    validationRuleNumber += this.RULE_LENGTH;
+                }
+                else
+                {
+                    trainingRuleNumber += this.RULE_LENGTH;
+                }
                 geneNumber++;
             }
         } catch (FileNotFoundException ex)
@@ -241,15 +293,30 @@ public class Popultation
         System.out.println(geneNumber);
         System.out.println(RULE_LENGTH);
     }
+    
+    private boolean [] getValidationBooleanArray(int sizeOfDataSet, int validationSets)
+    {
+        int currentNumberOfValidationSets = 0;
+        boolean [] isValidationSet = new boolean [sizeOfDataSet];
+        while (currentNumberOfValidationSets < validationSets)
+        {
+            int newIndex = this.random.nextInt(sizeOfDataSet);
+            if(isValidationSet[newIndex] != true)
+            {
+                isValidationSet[newIndex] = true;
+                currentNumberOfValidationSets++;
+            }
+        }
+        return isValidationSet;
+    }
 
     private void printFitnessRules()
     {
-        Util.printArray(fitnessRules, this.RULE_LENGTH);
+        Util.printArray(trainingRules, this.RULE_LENGTH);
     }
 
     private void addBestSolutionBack()
     {
-        int target = random.nextInt(POPULATION_NUM);
-        this.population[target] = this.fittestSolution;
+        this.population[this.worst] = this.fittestSolution;
     }
 }

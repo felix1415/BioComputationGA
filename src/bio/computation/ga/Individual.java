@@ -102,9 +102,9 @@ public class Individual
     
     public void flipGene(int geneIndex)
     {
-        //if gene is 1, gene can flip to be 0 or #
-//        boolean splitter = this.r.nextBoolean();
-        if(this.gene[geneIndex] == (float) 1.0)
+        //if gene is 1, gene flip to be 0
+        int geneAsInt = (int)this.gene[geneIndex];
+        if(geneAsInt == 1)
         {
             this.gene[geneIndex] = (float) 0.0;
         }
