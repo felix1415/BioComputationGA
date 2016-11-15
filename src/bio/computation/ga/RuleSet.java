@@ -125,7 +125,6 @@ public class RuleSet extends Individual
     
     public static boolean ruleMatches(float [] candidate, float [] data)
     {
-        boolean matches = true;
         for (int i = 0; i < (candidate.length / 2); i++)
         {            
             if(data[i] < candidate[i*2] || data[i] > candidate[i*2 + 1])
@@ -133,7 +132,7 @@ public class RuleSet extends Individual
                 return false;             
             }
         }
-        return matches;
+        return true;
     }
 
     @Override
@@ -175,6 +174,7 @@ public class RuleSet extends Individual
     @Override
     public void mutateGene(int geneIndex, float mutateRange)
     {
+        
         float currentGene = super.getGene()[geneIndex];
         float mutationValue = super.getRandom().nextFloat() * mutateRange; 
         boolean plusToGene = super.getRandom().nextBoolean();
@@ -225,5 +225,14 @@ public class RuleSet extends Individual
     private int getIndex()
     {
         return this.index;
+    }
+
+    void printFitnessRules()
+    {
+        for (int data = 0; data < this.NUMBER_OF_FITNESS_RULES; data++)
+        {
+            Util.printArray(this.getFitnessRule(data));
+            System.out.println("@" + this.getFitnessOutput(data));
+        }
     }
 }

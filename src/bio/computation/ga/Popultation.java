@@ -22,13 +22,13 @@ import java.util.logging.Logger;
  */
 public class Popultation
 {
-    public final int POPULATION_NUM = 100;
+    public final int POPULATION_NUM = 1000;
     public final int GENE_NUM;
     public int RULE_LENGTH;
-    public final int NUMBER_OF_RULES = 20;
-    public final int GENERATIONS = 300;
+    public final int NUMBER_OF_RULES = 12;
+    public final int GENERATIONS = 3000;
     public final double CROSSOVER_NUM = 0.9;
-    public final double MUTATION_NUM = 0.009;
+    public final double MUTATION_NUM = 0.01;
     public final float MUTATION_RANGE = (float) 0.1;
     
     public final String OUTPUT_FILE = "graph_data.csv";
@@ -94,6 +94,7 @@ public class Popultation
 //            this.printPopulation();
             this.print();
         }
+        this.population[0].printFitnessRules();
         this.fittestSolution.print();
     }
     
@@ -237,8 +238,8 @@ public class Popultation
             Logger.getLogger(Popultation.class.getName()).log(Level.SEVERE, null, ex);
         }
         this.RULE_LENGTH = (this.RULE_LENGTH * 2); // bounds plus one for the output
-//        System.out.println(geneNumber);
-//        System.out.println(RULE_LENGTH);
+        System.out.println(geneNumber);
+        System.out.println(RULE_LENGTH);
     }
 
     private void printFitnessRules()
