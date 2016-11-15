@@ -89,28 +89,28 @@ public class Individual
         this.gene[indexIn] = geneIn;
     }
     
-    public void mutation(double mutationVal)
+    public void mutation(double mutationVal, float mutationRange)
     {
         for (int i = 0; i < this.gene.length; i++)
         {
             if(mutationVal > r.nextDouble())
             {
-                this.mutateGene(i);
+                this.mutateGene(i, mutationRange);
             }
         }
     }
     
-    public void mutateGene(int geneIndex)
+    public void flipGene(int geneIndex)
     {
         //if gene is 1, gene can flip to be 0 or #
 //        boolean splitter = this.r.nextBoolean();
-        if(this.gene[geneIndex] == 1)
+        if(this.gene[geneIndex] == (float) 1.0)
         {
-            this.gene[geneIndex] = 0;
+            this.gene[geneIndex] = (float) 0.0;
         }
         else
         {
-            this.gene[geneIndex] = 1;
+            this.gene[geneIndex] = (float) 1.0;
         }
     }
 
@@ -123,6 +123,11 @@ public class Individual
     {
         System.out.print(Arrays.toString(this.gene));
         System.out.println("-" + this.fitness);
+    }
+
+    public void mutateGene(int geneIndex, float mutateRange)
+    {
+        System.out.println("bio.computation.ga.Individual.mutateGene()");
     }
     
     

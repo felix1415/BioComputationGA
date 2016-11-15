@@ -22,14 +22,14 @@ import java.util.logging.Logger;
  */
 public class Popultation
 {
-    public final int POPULATION_NUM = 50;
+    public final int POPULATION_NUM = 100;
     public final int GENE_NUM;
     public int RULE_LENGTH;
-    public final int NUMBER_OF_RULES = 5;
-    public final int GENERATIONS = 100;
+    public final int NUMBER_OF_RULES = 20;
+    public final int GENERATIONS = 300;
     public final double CROSSOVER_NUM = 0.9;
-    public final double MUTATION_NUM = 0.01;
-    public final double MUTATION_RANGE= 0.1;
+    public final double MUTATION_NUM = 0.009;
+    public final float MUTATION_RANGE = (float) 0.1;
     
     public final String OUTPUT_FILE = "graph_data.csv";
     public final String INPUT_FILE = "input_data.dsv";
@@ -61,6 +61,7 @@ public class Popultation
         this.RULE_LENGTH = 0;
         this.readInFile();
         this.GENE_NUM = RULE_LENGTH * NUMBER_OF_RULES;
+        
         for (int i = 0; i < POPULATION_NUM; i++)
         {
             this.population[i] = new RuleSet(GENE_NUM, fitnessRules, RULE_LENGTH, i);
@@ -70,20 +71,30 @@ public class Popultation
 
     void run()
     {
+//        System.out.println(this.population[1].getFitnessOutput(32));
+//        System.out.println(this.population[1].getFitnessOutput(643));
+//        System.out.println(this.population[1].getFitnessOutput(343));
+//        System.out.println(this.population[1].getFitnessOutput(312));
+//        System.out.println(this.population[1].getFitnessOutput(37));
+//        System.out.println(this.population[1].getFitnessOutput(764));
+//        System.out.println(this.population[1].getFitnessOutput(1500));
+//        return;
+        
         this.calculateFitness();
-        this.printPopulation();
+//        this.printPopulation();
         this.print();
-        this.printFitnessRules();
+//        this.printFitnessRules();
         for (int i = 0; i < GENERATIONS; i++)
         {
             this.selection();
-            this.mutation();
             this.crossover();
+            this.mutation();
             this.calculateFitness();
 //            this.addBestSolutionBack();
-            this.printPopulation();
+//            this.printPopulation();
             this.print();
         }
+        this.fittestSolution.print();
     }
     
     void selection()
@@ -134,7 +145,7 @@ public class Popultation
         //for each member of the population, process mutation
         for (int i = 0; i < POPULATION_NUM; i++)
         {
-            this.population[i].mutation(MUTATION_NUM);
+            this.population[i].mutation(MUTATION_NUM, MUTATION_RANGE);
         }
     }
     
@@ -214,7 +225,6 @@ public class Popultation
                 //for each gene in the line
                 for (int i = 0; i < this.RULE_LENGTH; i++)
                 {
-//                    System.out.println(line.next());
                     //add gene to position in rule and rule position in array
                     this.fitnessRules[ruleNumber + i] = Float.parseFloat(String.valueOf(line.next()));
                     
@@ -226,8 +236,9 @@ public class Popultation
         {
             Logger.getLogger(Popultation.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println(geneNumber);
-        System.out.println(RULE_LENGTH);
+        this.RULE_LENGTH = (this.RULE_LENGTH * 2); // bounds plus one for the output
+//        System.out.println(geneNumber);
+//        System.out.println(RULE_LENGTH);
     }
 
     private void printFitnessRules()

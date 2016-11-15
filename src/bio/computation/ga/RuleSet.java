@@ -26,14 +26,14 @@ public class RuleSet extends Individual
         this.RULE_LENGTH = ruleLength;
         this.index = indexIn;
         this.NUMBER_OF_RULES = super.getGene().length / this.RULE_LENGTH;
-        this.NUMBER_OF_FITNESS_RULES = this.fitnessRules.length / this.RULE_LENGTH;
+        this.NUMBER_OF_FITNESS_RULES = this.fitnessRules.length / (this.RULE_LENGTH / 2);
         
         float [] array = new float[numberOfGenes];
         for (int i = 0; i < numberOfGenes; i++)
         {
-            if (((i + 1) % this.RULE_LENGTH) == 0)
+            if (((i + 1) % (this.RULE_LENGTH - 1)) == 0)
             {
-                array[i] = super.getRandom().nextFloat();
+                array[i] = Math.round(super.getRandom().nextFloat());
             }
             else
             {
@@ -49,7 +49,7 @@ public class RuleSet extends Individual
         this.fitnessRules = crsIn.getFitnessRules().clone();
         this.RULE_LENGTH = crsIn.getRuleLength();
         this.NUMBER_OF_RULES = crsIn.getGene().length / crsIn.getRuleLength();
-        this.NUMBER_OF_FITNESS_RULES = crsIn.getFitnessRules().length / crsIn.getRuleLength();
+        this.NUMBER_OF_FITNESS_RULES = crsIn.getFitnessRules().length / (crsIn.getRuleLength() / 2);
         this.index = crsIn.getIndex() + 100;
     }
 
@@ -63,10 +63,36 @@ public class RuleSet extends Individual
         return this.fitnessRules;
     }
     
+    public void boundsCheckArray()
+    {
+        int rules = 0;
+        for (int i = 0; i < super.getGene().length; i++)
+        {
+            if (((i + 1) % (this.RULE_LENGTH - 1)) == 0)
+            {
+                rules++;
+                if (rules == this.NUMBER_OF_RULES)
+                {
+                    break;
+                }
+                continue;
+            }
+            if(super.getGene()[i] > super.getGene()[i + 1])
+            {
+                float temp = super.getGene()[i];
+                super.getGene()[i] = super.getGene()[i+1];
+                super.getGene()[i + 1] = temp;
+            }
+            i++;
+        }
+    }
+    
     public void calcFitness()
     {
         this.setFitness(0);
+        this.boundsCheckArray();
         //for every data rule
+//        System.out.println("fit: " + this.NUMBER_OF_FITNESS_RULES + " cad: " + this.NUMBER_OF_RULES);
         for (int data = 0; data < this.NUMBER_OF_FITNESS_RULES; data++)
         {
             //for every candidate rule
@@ -74,20 +100,13 @@ public class RuleSet extends Individual
             {
                 //if each bit int candidate matches or has a wildcard with a
                 //data bit, matches stays true
-                boolean matches = true;
-                for (int x = 0; x < this.getRule(candidate).length; x++)
-                {
-                    if(this.getRule(candidate)[x] != 2 && this.getRule(candidate)[x] != this.getFitnessRule(data)[x])
-                    {
-                        matches = false;
-                        break;
-                    }
-                }
+                boolean matches = RuleSet.ruleMatches(this.getRule(candidate), this.getFitnessRule(data));
+
                 if(matches)
                 {
-                    if(this.getOutput(candidate) == this.getFitnessOutput(data))
+//                    this.incFitness();
+                    if(Math.abs(this.getOutput(candidate)) == Math.abs(this.getFitnessOutput(data)))
                     {
-                        
                         this.incFitness();
                         break;
                     }
@@ -96,18 +115,22 @@ public class RuleSet extends Individual
                         break;
                     }
                 }
+                else 
+                {
+                    break;
+                }
             }
         }
     }
     
-    public static boolean matches(int [] one, int [] two)
+    public static boolean ruleMatches(float [] candidate, float [] data)
     {
         boolean matches = true;
-        for (int i = 0; i < one.length; i++)
-        {
-            if(one[i] != 2 && one[i] != two[i])
+        for (int i = 0; i < (candidate.length / 2); i++)
+        {            
+            if(data[i] < candidate[i*2] || data[i] > candidate[i*2 + 1])
             {
-                matches = false;
+                return false;             
             }
         }
         return matches;
@@ -121,8 +144,8 @@ public class RuleSet extends Individual
     
     public float [] getRule(int rule)
     {
-        int start = rule * this.RULE_LENGTH;
-        int end = ((rule + 1) * this.RULE_LENGTH) - 1;
+        int start = rule * (this.RULE_LENGTH - 1);
+        int end = ((rule + 1) * (this.RULE_LENGTH - 1)) - 1;
         return Arrays.copyOfRange(super.getGene(), 
                 start, 
                 end);
@@ -130,14 +153,14 @@ public class RuleSet extends Individual
     
     public float  getOutput(int rule)
     {
-        int end = ((rule + 1) * this.RULE_LENGTH) - 1;
+        int end = ((rule + 1) * (this.RULE_LENGTH - 1)) - 1;  
         return super.getGene()[end];
     }
     
     public float [] getFitnessRule(int rule)
     {
-        int start = rule * this.RULE_LENGTH;
-        int end = ((rule + 1) * this.RULE_LENGTH) - 1;
+        int start = rule * (this.RULE_LENGTH / 2);
+        int end = ((rule + 1) * (this.RULE_LENGTH / 2)) - 1;
         return Arrays.copyOfRange(this.fitnessRules, 
                 start, 
                 end);
@@ -145,34 +168,58 @@ public class RuleSet extends Individual
     
     public float getFitnessOutput(int rule)
     {
-        int end = ((rule + 1) * this.RULE_LENGTH) - 1;
+        int end = ((rule + 1) * (this.RULE_LENGTH / 2)) - 1;
         return this.fitnessRules[end];
     }
     
     @Override
-    public void mutateGene(int geneIndex)
+    public void mutateGene(int geneIndex, float mutateRange)
     {
-        float number = super.getGene()[geneIndex];
-        while (super.getGene()[geneIndex] == number)
+        float currentGene = super.getGene()[geneIndex];
+        float mutationValue = super.getRandom().nextFloat() * mutateRange; 
+        boolean plusToGene = super.getRandom().nextBoolean();
+        
+        //if gene is output flip the gene
+        if ((geneIndex + 1) % (this.RULE_LENGTH - 1) == 0)
         {
-            if (((geneIndex + 1) % this.RULE_LENGTH) == 0)
+            super.flipGene(geneIndex);
+            return;
+        }
+        
+        if(plusToGene)
+        {
+            if ((currentGene + mutationValue) <= (float)1.0)
             {
-                super.setGene(geneIndex, super.getRandom().nextInt(2));
+                super.setGene(geneIndex, (currentGene + mutationValue));
             }
             else
             {
-                super.setGene(geneIndex, super.getRandom().nextInt(3));
+                super.setGene(geneIndex, (float) 1.0);
+            }
+        }
+        else
+        {
+            if ((currentGene - mutationValue) >= (float)0.0)
+            {
+                super.setGene(geneIndex, (currentGene - mutationValue));
+            }
+            else
+            {
+                super.setGene(geneIndex, (float) 0.0);
             }
         }
     }
 
     @Override
     public void print()
-    {
-//        System.out.println("bio.computation.ga.RuleSet.print()");
+    {   
         System.out.print(this.index);   
-        System.out.print("*" + super.getFitness() + "-");
-        Util.printArray(this.getGene(), this.RULE_LENGTH);
+        System.out.println("*" + super.getFitness() + "-");
+        for (int i = 0; i < this.NUMBER_OF_RULES; i++)
+        {
+            Util.printArray(this.getRule(i));
+            System.out.println("@" + this.getOutput(i));
+        }
     }
 
     private int getIndex()

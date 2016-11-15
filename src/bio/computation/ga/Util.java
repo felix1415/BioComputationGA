@@ -20,23 +20,29 @@ public class Util
         {
             for (int j = 0; j < ruleLength; j++)
             {
-                System.out.print(array[j + (i * ruleLength)]);
+                if (((j + 1) % (ruleLength - 1)) == 0)
+                {
+                    System.out.print("/\\");
+                    System.out.print(array[j + (i * ruleLength)]);
+                    System.out.print("/\\");
+                    break;
+                }
+                System.out.print(array[j + (i * ruleLength)] + "|");
             }
-            System.out.print("|");
         }
         System.out.println();
     }
 
-    public static String printArray(int[] gene)
+    public static String printArray(float[] gene)
     {
-        System.out.println("bio.computation.ga.Util.printArray()" + Arrays.toString(gene));
         String s = "";
         for (int i = 0; i < gene.length; i++)
         {
             System.out.print(gene[i]);
+            System.out.print("|");
             s += gene[i];
-            
         }
+        System.out.print("/\\");
         System.out.print("|");
         s += "|";
         return s;
