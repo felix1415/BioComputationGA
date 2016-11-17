@@ -1,5 +1,5 @@
 # BioComputationGA
-This master is defunct.
+This master is the up-to-date version of test_data_3.
 
 test_data_1 is a GA that attempts to solve 32 data points with 5 bit inputs and 1 bit output.
 test_data_2 is a GA that attempts to solve 64 data points with 6 bit inputs and 1 bit output.
