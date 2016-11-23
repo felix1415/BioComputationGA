@@ -296,16 +296,10 @@ public class Popultation
     
     private boolean [] getValidationBooleanArray(int sizeOfDataSet, int validationSets)
     {
-        int currentNumberOfValidationSets = 0;
         boolean [] isValidationSet = new boolean [sizeOfDataSet];
-        while (currentNumberOfValidationSets < validationSets)
+        for (int i = 0; i < validationSets; i++)
         {
-            int newIndex = this.random.nextInt(sizeOfDataSet);
-            if(isValidationSet[newIndex] != true)
-            {
-                isValidationSet[newIndex] = true;
-                currentNumberOfValidationSets++;
-            }
+            isValidationSet[i] = true;
         }
         return isValidationSet;
     }
