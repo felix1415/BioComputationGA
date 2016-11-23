@@ -209,7 +209,7 @@ public class Popultation
                 numOfLines++;
                 this.RULE_LENGTH = in.nextLine().replaceAll("\\s+","").length();
             }
-            this.numberOfValidationRules = (int) (numOfLines * 0.4);
+            this.numberOfValidationRules = (int) (numOfLines * 0);
             this.numberOfTrainingRules = numOfLines - this.numberOfValidationRules;
             this.trainingRules = new int [this.numberOfTrainingRules * this.RULE_LENGTH];
             this.validationRules = new int [this.numberOfValidationRules * this.RULE_LENGTH];
